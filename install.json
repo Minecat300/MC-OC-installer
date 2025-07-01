@@ -1,3 +1,5 @@
 {
-    
+    "fileInstalls": [
+        {"name": "main.lua", "type": "file"}
+    ]
 }

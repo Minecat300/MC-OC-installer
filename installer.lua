@@ -29,28 +29,8 @@ local function installFile(url, path)
 end
 
 installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
+installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
 
-local json = require("dkjson")
+local proInstaller = require("projectInstaller")
 
-local url = repoUrl .. "/install.json"
-local handle, err = internet.request(url)
-if not handle then
-    print("Failed to request URL:", err)
-    return
-end
-
-local jsonInstall = ""
-while true do
-    local chunk = handle.read(8192)
-    if not chunk then break end
-    jsonInstall = jsonInstall .. chunk
-end
-
-local obj, pos, decode_err = json.decode(jsonInstall, 1, nil)
-if decode_err then
-    print("JSON decode error:", decode_err)
-    return
-end
-
-print(jsonInstall)
-print(seri.serialize(obj))
+proInstaller.install(repoUrl, installpath)
