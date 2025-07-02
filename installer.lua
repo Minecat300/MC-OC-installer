@@ -36,15 +36,5 @@ os.sleep(0.2)
 
 package.path = installpath .. "/?.lua;" .. package.path
 
-print("test1")
-
 local proInstaller = require("projectInstaller")
-print("test2")
-local ok, err = pcall(function()
-  proInstaller.install(repoUrl)
-end)
-
-if not ok then
-  print("installer failed: ", err)
-end
-print("test3")
+proInstaller.install(repoUrl)
