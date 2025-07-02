@@ -1,4 +1,5 @@
 {
+    "installPath": "/Uinstall",
     "fileInstalls": [
         {"name": "main.lua", "type": "file"}
     ]

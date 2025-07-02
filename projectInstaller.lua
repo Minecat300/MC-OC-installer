@@ -29,18 +29,80 @@ local function getJson(url)
     return obj
 end
 
-function M.install(url, path)
+local function installFile(url, path)
+    local handle, err = internet.request(url)
+    if not handle then
+        print("Failed to request URL:", err)
+        return
+    end
+
+    local file = io.open(path, "w")
+
+    while true do
+        local chunk = handle.read(8192)
+        if not chunk then break end
+        file:write(chunk)
+    end
+
+    file:close()
+end
+
+local function installFileArray(baseUrl, urlArray, installPath)
+    for index, value in ipairs(urlArray) do
+        local name = value.name or nil
+        if not name then
+            print("failed to install. no file/dir name was found")
+            return
+        end
+
+        local type = value.type or nil
+        if not type then
+            print("failed to install. no file/dir type was found")
+            return
+        end
+
+        if (type == "file") then
+            installFile(baseUrl .. "/" .. name, installPath .. name)
+        end
+        if (type == "dir") then
+            local fileInstalls = value.fileInstalls
+            if not fileInstalls then
+                print("failed to install. no files found in dir: " .. name)
+                return
+            end
+
+            if not filesystem.isDirectory(installPath .. "/" .. name) then
+                filesystem.makeDirectory(installPath .. "/" .. name)
+            end
+
+            installFileArray(baseUrl .. "/" .. name, fileInstalls, installPath .. "/" .. name)
+        end
+    end
+end
+
+function M.install(url)
     local installJson = getJson(url .. "/install.json")
     if not installJson then
         print("failed to install. no JSON was found")
         return
     end
 
+    print(seri.serialize(installJson))
+
     local fileInstalls = installJson.fileInstalls or nil
     if not fileInstalls then
         print("failed to install. no install files found")
         return
     end
+
+    local installPath = installJson.installPath or nil
+    if not installPath then
+        print("failed to install. no install path found")
+        return
+    end
+
+    installFileArray(url, fileInstalls, installPath)
+
 end
 
 return M
