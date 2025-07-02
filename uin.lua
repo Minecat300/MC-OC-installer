@@ -1,4 +1,3 @@
-#!/usr/bin/env lua
 local component = require("component")
 local internet = component.internet
 local filesystem = require("filesystem")
