@@ -32,9 +32,13 @@ installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
 installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
 print("installed required files")
 
---os.sleep(0.2)
-print("package 1: " .. package.path)
+os.sleep(0.2)
+
 package.path = installpath .. "/?.lua;" .. package.path
-print("package 2: " .. package.path)
+
+print("test1")
+
 local proInstaller = require("projectInstaller")
+print("test2")
 proInstaller.install(repoUrl)
+print("test3")
