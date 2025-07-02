@@ -61,8 +61,7 @@ local function installFileArray(baseUrl, urlArray, installPath)
             return
         end
         if (type == "file") then
-            print(baseUrl .. "/" .. name, installPath .. name)
-            installFile(baseUrl .. "/" .. name, installPath .. name)
+            installFile(baseUrl .. "/" .. name, installPath .. "/" .. name)
         end
         if (type == "dir") then
             local fileInstalls = value.fileInstalls
