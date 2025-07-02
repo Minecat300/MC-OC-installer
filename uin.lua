@@ -117,9 +117,9 @@ if command == "autoUpdate" then
         return
     end
     local packageData = readFile("/Uinstall/packageData")
-    print("Past value: autoUpdate = " .. packageData[packageName].autoUpdate)
+    print("Past value: autoUpdate = " .. tostring(packageData[packageName].autoUpdate))
     packageData[packageName].autoUpdate = state
-    print("New value: autoUpdate = " .. packageData[packageName].autoUpdate)
+    print("New value: autoUpdate = " .. tostring(packageData[packageName].autoUpdate))
     writeFile("/Uinstall/packageData", packageData)
 end
 
