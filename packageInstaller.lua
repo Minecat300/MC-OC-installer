@@ -47,11 +47,21 @@ local function installFile(url, path)
     file:close()
 end
 
+local function deleteRecursive(path)
+    if filesystem.isDirectory(path) then
+        for file in filesystem.list(path) do
+            local fullPath = filesystem.concat(path, file)
+            deleteRecursive(fullPath)
+        end
+    end
+    filesystem.remove(path)
+end
+
 local function installFileArray(baseUrl, urlArray, installPath)
     for index, value in ipairs(urlArray) do
         local name = value.name
         if not name then
-            print("failed to install. no file/dir name was found")
+            print("Failed to install. No file/dir name was found")
             return
         end
 
@@ -59,16 +69,18 @@ local function installFileArray(baseUrl, urlArray, installPath)
 
         local type = value.type
         if not type then
-            print("failed to install. no file/dir type was found")
+            print("Failed to install. No file/dir type was found")
             return
         end
-        if (type == "file") then
+
+        if type == "file" then
             installFile(baseUrl .. "/" .. name, installPath .. subPath .. name)
         end
-        if (type == "dir") then
+
+        if type == "dir" then
             local fileInstalls = value.fileInstalls
             if not fileInstalls then
-                print("failed to install. no files found in dir: " .. name)
+                print("Failed to install. No files found in dir: " .. name)
                 return
             end
 
@@ -81,9 +93,35 @@ local function installFileArray(baseUrl, urlArray, installPath)
     end
 end
 
+local function uninstallFileArray(fileArray, installpath)
+    for index, value in ipairs(fileArray) do
+        local name = value.name
+        if not name then
+            print("Failed to uninstall. No file/dir name was found")
+            return
+        end
+
+        local subPath = value.subPath or ""
+
+        local type = value.type
+        if not type then
+            print("Failed to uninstall. No file/dir type was found")
+            return
+        end
+
+        if type == "file" then
+            filesystem.remove(installpath .. subPath .. name)
+        end
+
+        if type == "dir" then
+            deleteRecursive(installpath .. subPath .. name)
+        end
+    end
+end
+
 local function writeFile(filePath, data)
     local serializedData = seri.serialize(data)
-    file = io.open(filePath, "w")
+    local file = io.open(filePath, "w")
     if file then
         file:write(serializedData)
         file:close()
@@ -102,7 +140,7 @@ local function readFile(filePath)
 
         data = seri.unserialize(fileContent)
         if not data then
-            print("Error: failed to unserialize the file content")
+            print("Error: Failed to unserialize the file content")
             data = {}
         end
     else
@@ -137,31 +175,31 @@ function M.update(packageName)
         return
     end
 
-    print("updating package: " .. packageName)
+    print("Updating package: " .. packageName)
 
     local rawUrl = packageData[packageName].url
 
     local installJson = getJson(rawUrl .. "/install.json")
     if not installJson then
-        print ("failed to update. no install JSON was found")
+        print ("Failed to update. No install JSON was found")
         return
     end
 
     local newPackageName = installJson.packageName
     if not newPackageName then
-        print("failed to update. no package name was found")
+        print("Failed to update. No package name was found")
         return
     end
 
     local fileInstalls = installJson.fileInstalls
     if not fileInstalls then
-        print("failed to update. no install files found")
+        print("Failed to update. No install files found")
         return
     end
     
     local installpath = installJson.installPath
     if not installpath then
-        print("failed to update. no install path found")
+        print("Failed to update. No install path found")
         return
     end
 
@@ -175,12 +213,38 @@ function M.update(packageName)
     end
 end
 
+function M.uninstall(packageName)
+    local packageData = readFile("/Uinstall/packageData")
+    if not packageData[packageName] then
+        print("No package named (" .. packageName .. ") was found")
+        return
+    end
+
+    print("Uninstalling package: " .. packageName)
+
+    local installedFiles = packageData[packageName].installedFiles
+    if not installedFiles then
+        print("Failed to uninstall. No installed files found")
+        return
+    end
+
+    local installPath = packageData[packageName].installPath
+    if not installPath then
+        print("Failed to uninstall. No install path was found")
+        return
+    end
+
+    uninstallFileArray(installedFiles, installPath)
+    removePackageData(packageName)
+    print(packageName .. " was uninstalled!")
+end
+
 function M.install(url)
-    print("installing package from url: " .. url)
+    print("Installing package from url: " .. url)
 
     local installJson = getJson(url .. "/install.json")
     if not installJson then
-        print("failed to install. no install JSON was found")
+        print("Failed to install. No install JSON was found")
         return
     end
 
@@ -188,19 +252,19 @@ function M.install(url)
 
     local packageName = installJson.packageName
     if not packageName then
-        print("failed to install. no package name was found")
+        print("Failed to install. No package name was found")
         return
     end
 
     local fileInstalls = installJson.fileInstalls
     if not fileInstalls then
-        print("failed to install. no install files found")
+        print("Failed to install. No install files found")
         return
     end
 
     local installPath = installJson.installPath
     if not installPath then
-        print("failed to install. no install path found")
+        print("Failed to install. No install path found")
         return
     end
 

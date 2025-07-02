@@ -68,6 +68,15 @@ if command == "update" then
     packInstaller.update(packageName)
 end
 
+if command == "uninstall" then
+    local packageName = args[2]
+    if not packageName then
+        print("No package was provided")
+        return
+    end
+    packInstaller.uninstall(packageName)
+end
+
 if command == "help" or command == "h" or command == "?" then
     print('help:        shows this menu                                  "help"')
     print('install:     installs a package                               "install [repository] [?branch]"')
