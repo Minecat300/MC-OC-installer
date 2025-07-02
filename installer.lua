@@ -37,4 +37,6 @@ os.sleep(0.2)
 package.path = installpath .. "/?.lua;" .. package.path
 
 local proInstaller = require("projectInstaller")
+print("module loaded from:", debug.getinfo(proInstaller.install).short_src)
+
 proInstaller.install(repoUrl)
