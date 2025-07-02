@@ -1,6 +1,6 @@
 {
-    "installPath": "/Uinstall",
+    "installPath": "/bin",
     "fileInstalls": [
-        {"name": "main.lua", "type": "file"}
+        {"name": "uin.lua", "type": "file"}
     ]
 }
