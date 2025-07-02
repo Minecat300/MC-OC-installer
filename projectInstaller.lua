@@ -103,6 +103,8 @@ function M.install(url)
         return
     end
 
+    print(url, fileInstalls, installPath)
+
     installFileArray(url, fileInstalls, installPath)
 
 end
