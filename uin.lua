@@ -45,7 +45,6 @@ if command == "install" then
     end
     local rawUrl = makeRawURL(url, args[3] or "main")
     packInstaller.install(rawUrl)
-    print("installed!")
 end
 
 if command == "list" then
@@ -61,7 +60,12 @@ if command == "checkUpdate" then
 end
 
 if command == "update" then
-    
+    local packageName = args[1]
+    if not packageName then
+        print("No package was provided")
+        return
+    end
+    packInstaller.update(packageName)
 end
 
 if command == "help" or command == "h" or command == "?" then

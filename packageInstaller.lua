@@ -112,8 +112,67 @@ local function readFile(filePath)
     return data
 end
 
-function M.update(package)
-    print("updating package: " .. package)
+local function addPackageData(packageName, installJson, url, fileInstalls, installPath)
+    local packageData = readFile("/Uinstall/packageData")
+    packageData[packageName] = {}
+    packageData[packageName].url = url
+    packageData[packageName].installedFiles = seri.serialize(fileInstalls)
+    packageData[packageName].installPath = installPath
+    packageData[packageName].description = installJson.description
+    packageData[packageName].autoUpdate = installJson.autoUpdate or false
+    packageData[packageName].version = installJson.version or "1.0"
+    writeFile("/Uinstall/packageData", packageData)
+end
+
+local function removePackageData(packageName)
+    local packageData = readFile("/Uinstall/packageData")
+    packageData[packageName] = nil
+    writeFile("/Uinstall/packageData", packageData)
+end
+
+function M.update(packageName)
+    local packageData = readFile("/Uinstall/packageData")
+    if not packageData[packageName] then
+        print("No package named (" .. packageName .. ") was found")
+        return
+    end
+
+    print("updating package: " .. packageName)
+
+    local rawUrl = packageData[packageName].url
+
+    local installJson = getJson(rawUrl .. "/install.json")
+    if not installJson then
+        print ("failed to update. no install JSON was found")
+        return
+    end
+
+    local newPackageName = installJson.packageName
+    if not newPackageName then
+        print("failed to update. no package name was found")
+        return
+    end
+
+    local fileInstalls = installJson.fileInstalls
+    if not fileInstalls then
+        print("failed to update. no install files found")
+        return
+    end
+    
+    local installpath = installJson.installPath
+    if not installpath then
+        print("failed to update. no install path found")
+        return
+    end
+
+    installFileArray(rawUrl, fileInstalls, installpath)
+    removePackageData(packageName)
+    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installpath)
+    if packageName == newPackageName then
+        print(packageName .. " was updated to newest version!")
+    else
+        print(packageName .. " was updated with new name: " .. newPackageName)
+    end
 end
 
 function M.install(url)
@@ -121,7 +180,7 @@ function M.install(url)
 
     local installJson = getJson(url .. "/install.json")
     if not installJson then
-        print("failed to install. no JSON was found")
+        print("failed to install. no install JSON was found")
         return
     end
 
@@ -146,14 +205,7 @@ function M.install(url)
     end
 
     installFileArray(url, fileInstalls, installPath)
-
-    local packageData = readFile("/Uinstall/packageData")
-    packageData[packageName] = {}
-    packageData[packageName].url = url
-    packageData[packageName].installedFiles = seri.serialize(fileInstalls)
-    packageData[packageName].description = installJson.description
-    packageData[packageName].autoUpdate = installJson.autoUpdate or false
-    packageData[packageName].version = installJson.version or "1.0"
-    writeFile("/Uinstall/packageData", packageData)
+    addPackageData(packageName, installJson, url, fileInstalls, installPath)
+    print(packageName .. " was installed!")
 end
 return M
