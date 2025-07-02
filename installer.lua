@@ -30,13 +30,27 @@ end
 
 installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
 installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
-print("installed required files")
+print("[MAIN] installed required files")
 
 os.sleep(0.2)
 
 package.path = installpath .. "/?.lua;" .. package.path
+print("[MAIN] package.path updated")
 
-local proInstaller = require("projectInstaller")
-print("module loaded from:", debug.getinfo(proInstaller.install).short_src)
+local ok, proInstaller = pcall(require, "projectInstaller")
+if not ok then
+    print("[ERROR] Failed to require projectInstaller:", proInstaller)
+else
+    print("[MAIN] Required projectInstaller module")
 
-proInstaller.install(repoUrl)
+    print("[DEBUG] type of proInstaller:", type(proInstaller))
+
+    if type(proInstaller.install) == "function" then
+        print("[MAIN] install function found, running it...")
+        proInstaller.install(repoUrl)
+    else
+        print("[ERROR] install function not found in module!")
+    end
+end
+
+print("[MAIN] Done")

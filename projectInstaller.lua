@@ -4,6 +4,7 @@ local filesystem = require("filesystem")
 local seri = require("serialization")
 local json = require("dkjson")
 
+print("Loading Module")
 local M = {}
 
 local function getJson(url)
