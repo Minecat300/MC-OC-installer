@@ -55,3 +55,14 @@ if command == "list" then
         print(key, description)
     end
 end
+
+if command == "checkUpdate" then
+    
+end
+
+if command == "help" or command == "h" or command == "?" then
+    print("help: ", "shows this menu")
+    print("install: ", 'installs a program "install [repository] [?branch]"')
+    print("list: ", "lists all installed programs")
+    print("checkUpdate: ", 'checks and updates all or one autoupdate program "checkUpdate [?program]"')
+end

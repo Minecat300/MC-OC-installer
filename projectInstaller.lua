@@ -55,13 +55,15 @@ local function installFileArray(baseUrl, urlArray, installPath)
             return
         end
 
+        local subPath = value.subPath or ""
+
         local type = value.type
         if not type then
             print("failed to install. no file/dir type was found")
             return
         end
         if (type == "file") then
-            installFile(baseUrl .. "/" .. name, installPath .. "/" .. name)
+            installFile(baseUrl .. "/" .. name, installPath .. subPath .. name)
         end
         if (type == "dir") then
             local fileInstalls = value.fileInstalls
@@ -70,11 +72,11 @@ local function installFileArray(baseUrl, urlArray, installPath)
                 return
             end
 
-            if not filesystem.isDirectory(installPath .. "/" .. name) then
-                filesystem.makeDirectory(installPath .. "/" .. name)
+            if not filesystem.isDirectory(installPath .. subPath .. name) then
+                filesystem.makeDirectory(installPath .. subPath .. name)
             end
 
-            installFileArray(baseUrl .. "/" .. name, fileInstalls, installPath .. "/" .. name)
+            installFileArray(baseUrl .. "/" .. name, fileInstalls, installPath .. subPath .. name)
         end
     end
 end
@@ -146,6 +148,8 @@ function M.install(url)
     appData[appName].url = url
     appData[appName].installedFiles = seri.serialize(fileInstalls)
     appData[appName].description = installJson.description
+    appData[appName].autoUpdate = installJson.autoUpdate or false
+    appData[appName].version = installJson.version or "1.0"
     writeFile("/Uinstall/appData", appData)
 end
 return M
