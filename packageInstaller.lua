@@ -113,7 +113,7 @@ local function readFile(filePath)
 end
 
 function M.update(package)
-    print("updating ")
+    print("updating package: " .. package)
 end
 
 function M.install(url)
