@@ -51,7 +51,7 @@ end
 if command == "list" then
     local appData = readFile("/Uinstall/appData")
     for key, value in pairs(appData) do
-        local desciption = value.desciption or ""
-        print(key, desciption)
+        local description = value.description or ""
+        print(key, description)
     end
 end
