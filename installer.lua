@@ -29,14 +29,14 @@ local function installFile(url, path)
 end
 
 installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
-installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
+installFile(repoUrl .. "/packagetInstaller.lua", installpath .. "/packagetInstaller.lua")
 print("installed required files")
 
 os.sleep(0.2)
 
 package.path = installpath .. "/?.lua;" .. package.path
 
-package.loaded["projectInstaller"] = nil
-local proInstaller = require("projectInstaller")
-proInstaller.install(repoUrl)
+package.loaded["packagetInstaller"] = nil
+local packInstaller = require("packagetInstaller")
+packInstaller.install(repoUrl)
 print("installed")

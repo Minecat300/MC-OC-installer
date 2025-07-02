@@ -3,7 +3,7 @@ local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
 package.path = "/Uinstall/?.lua;" .. package.path
-local proInstaller = require("projectInstaller")
+local packInstaller = require("packageInstaller")
 
 local function makeRawURL(repoURL, branch)
     branch = branch or "main"
@@ -44,13 +44,13 @@ if command == "install" then
         return
     end
     local rawUrl = makeRawURL(url, args[3] or "main")
-    proInstaller.install(rawUrl)
+    packInstaller.install(rawUrl)
     print("installed!")
 end
 
 if command == "list" then
-    local appData = readFile("/Uinstall/appData")
-    for key, value in pairs(appData) do
+    local packageData = readFile("/Uinstall/packageData")
+    for key, value in pairs(packageData) do
         local description = value.description or ""
         print(key, description)
     end
@@ -62,7 +62,7 @@ end
 
 if command == "help" or command == "h" or command == "?" then
     print("help: ", "shows this menu")
-    print("install: ", 'installs a program "install [repository] [?branch]"')
-    print("list: ", "lists all installed programs")
-    print("checkUpdate: ", 'checks and updates all or one autoupdate program "checkUpdate [?program]"')
+    print("install: ", 'installs a package "install [repository] [?branch]"')
+    print("list: ", "lists all installed packages")
+    print("checkUpdate: ", 'checks and updates all or one autoupdate package "checkUpdate [?package]"')
 end

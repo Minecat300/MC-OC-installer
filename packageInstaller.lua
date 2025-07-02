@@ -112,8 +112,12 @@ local function readFile(filePath)
     return data
 end
 
+function M.update(package)
+    print("updating ")
+end
+
 function M.install(url)
-    print("installing project from url: " .. url)
+    print("installing package from url: " .. url)
 
     local installJson = getJson(url .. "/install.json")
     if not installJson then
@@ -123,9 +127,9 @@ function M.install(url)
 
     --print(seri.serialize(installJson))
 
-    local appName = installJson.appName
-    if not appName then
-        print("failed to install. no app name was found")
+    local packageName = installJson.packageName
+    if not packageName then
+        print("failed to install. no package name was found")
         return
     end
 
@@ -143,13 +147,13 @@ function M.install(url)
 
     installFileArray(url, fileInstalls, installPath)
 
-    local appData = readFile("/Uinstall/appData")
-    appData[appName] = {}
-    appData[appName].url = url
-    appData[appName].installedFiles = seri.serialize(fileInstalls)
-    appData[appName].description = installJson.description
-    appData[appName].autoUpdate = installJson.autoUpdate or false
-    appData[appName].version = installJson.version or "1.0"
-    writeFile("/Uinstall/appData", appData)
+    local packageData = readFile("/Uinstall/packageData")
+    packageData[packageName] = {}
+    packageData[packageName].url = url
+    packageData[packageName].installedFiles = seri.serialize(fileInstalls)
+    packageData[packageName].description = installJson.description
+    packageData[packageName].autoUpdate = installJson.autoUpdate or false
+    packageData[packageName].version = installJson.version or "1.0"
+    writeFile("/Uinstall/packageData", packageData)
 end
 return M
