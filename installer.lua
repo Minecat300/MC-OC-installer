@@ -31,6 +31,7 @@ end
 installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
 installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
 
-local proInstaller = require("projectInstaller")
+package.path = installpath .. "/?.lua;" .. package.path
 
+local proInstaller = require("projectInstaller")
 proInstaller.install(repoUrl)
