@@ -30,6 +30,7 @@ end
 
 installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
 installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
+print("installed required files")
 
 os.sleep(0.2)
 
