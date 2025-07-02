@@ -28,6 +28,19 @@ local function installFile(url, path)
     file:close()
 end
 
+local function writeFile(filePath, data)
+    local serializedData = seri.serialize(data)
+    file = io.open(filePath, "w")
+    if file then
+        file:write(serializedData)
+        file:close()
+    else
+        print("Error: Failed to open file for writing")
+    end
+end
+
+writeFile(installpath .. "/appData", {})
+
 installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
 installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
 print("installed required files")

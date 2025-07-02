@@ -14,6 +14,26 @@ local function makeRawURL(repoURL, branch)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s", user, repo, branch)
 end
 
+local function readFile(filePath)
+    local file = io.open(filePath, "r")
+    local data = {}
+
+    if file then
+        local fileContent = file:read("*all")
+        file:close()
+
+        data = seri.unserialize(fileContent)
+        if not data then
+            print("Error: failed to unserialize the file content")
+            data = {}
+        end
+    else
+        file = io.open(filePath, "w")
+        file:close()
+    end
+    return data
+end
+
 local args = {...}
 local command = args[1]
 
@@ -25,4 +45,13 @@ if command == "install" then
     end
     local rawUrl = makeRawURL(url, args[3] or "main")
     proInstaller.install(rawUrl)
+    print("installed!")
+end
+
+if command == "list" then
+    local appData = readFile("/Uinstall/appData")
+    for key, value in pairs(appData) do
+        local desciption = value.desciption or ""
+        print(key, desciption)
+    end
 end

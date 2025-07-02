@@ -79,6 +79,37 @@ local function installFileArray(baseUrl, urlArray, installPath)
     end
 end
 
+local function writeFile(filePath, data)
+    local serializedData = seri.serialize(data)
+    file = io.open(filePath, "w")
+    if file then
+        file:write(serializedData)
+        file:close()
+    else
+        print("Error: Failed to open file for writing")
+    end
+end
+
+local function readFile(filePath)
+    local file = io.open(filePath, "r")
+    local data = {}
+
+    if file then
+        local fileContent = file:read("*all")
+        file:close()
+
+        data = seri.unserialize(fileContent)
+        if not data then
+            print("Error: failed to unserialize the file content")
+            data = {}
+        end
+    else
+        file = io.open(filePath, "w")
+        file:close()
+    end
+    return data
+end
+
 function M.install(url)
     print("installing project from url: " .. url)
 
@@ -88,7 +119,13 @@ function M.install(url)
         return
     end
 
-    print(seri.serialize(installJson))
+    --print(seri.serialize(installJson))
+
+    local appName = installJson.appName
+    if not appName then
+        print("failed to install. no app name was found")
+        return
+    end
 
     local fileInstalls = installJson.fileInstalls
     if not fileInstalls then
@@ -104,5 +141,11 @@ function M.install(url)
 
     installFileArray(url, fileInstalls, installPath)
 
+    local appData = readFile("/Uinstall/appData")
+    appData[appName] = {}
+    appData[appName].url = url
+    appData[appName].installedFiles = seri.serialize(fileInstalls)
+    appData[appName].description = installJson.description
+    writeFile("/Uinstall/appData", appData)
 end
 return M

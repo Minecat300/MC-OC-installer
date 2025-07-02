@@ -1,4 +1,6 @@
 {
+    "appName": "uin",
+    "description": "A tool for installing and updating apps/packages",
     "installPath": "/bin",
     "fileInstalls": [
         {"name": "uin.lua", "type": "file"}
