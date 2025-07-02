@@ -4,7 +4,6 @@ local filesystem = require("filesystem")
 local seri = require("serialization")
 local json = require("dkjson")
 
-print("Loading Module")
 local M = {}
 
 local function getJson(url)
@@ -82,7 +81,6 @@ local function installFileArray(baseUrl, urlArray, installPath)
 end
 
 function M.install(url)
-    print("trying install")
     print("installing project from url: " .. url)
 
     local installJson = getJson(url .. "/install.json")
