@@ -49,7 +49,6 @@ end
 
 local function installFileArray(baseUrl, urlArray, installPath)
     for index, value in ipairs(urlArray) do
-        print(seri.serialize(value))
         local name = value.name
         if not name then
             print("failed to install. no file/dir name was found")
@@ -61,8 +60,8 @@ local function installFileArray(baseUrl, urlArray, installPath)
             print("failed to install. no file/dir type was found")
             return
         end
-        print(name, type)
         if (type == "file") then
+            print(baseUrl .. "/" .. name, installPath .. name)
             installFile(baseUrl .. "/" .. name, installPath .. name)
         end
         if (type == "dir") then
