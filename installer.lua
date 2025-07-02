@@ -40,5 +40,11 @@ print("test1")
 
 local proInstaller = require("projectInstaller")
 print("test2")
-proInstaller.install(repoUrl)
+local ok, err = pcall(function()
+  proInstaller.install(repoUrl)
+end)
+
+if not ok then
+  print("installer failed: ", err)
+end
 print("test3")
