@@ -1,3 +1,3 @@
 package.path = "/Uinstall/?.lua;" .. package.path
 local packInstaller = require("packageInstaller")
-packInstaller.autoUpdataAll()
+packInstaller.autoUpdateAll()
