@@ -32,7 +32,7 @@ installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
 installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstaller.lua")
 print("installed required files")
 
-os.sleep(0.2)
+--os.sleep(0.2)
 print("package 1: " .. package.path)
 package.path = installpath .. "/?.lua;" .. package.path
 print("package 2: " .. package.path)
