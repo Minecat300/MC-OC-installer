@@ -107,5 +107,4 @@ function M.install(url)
     installFileArray(url, fileInstalls, installPath)
 
 end
---t
 return M
