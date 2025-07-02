@@ -233,8 +233,10 @@ function M.autoUpdate(packageName)
     local newVersion = installJson.version or "1.0"
 
     if newVersion == oldVersion then
+        print("No newer version then: " .. newVersion .. " was found")
         return
     end
+    print("new version found: " .. oldVersion .. " -> " .. newVersion)
     M.update(packageName)
 end
 
