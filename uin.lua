@@ -34,6 +34,17 @@ local function readFile(filePath)
     return data
 end
 
+local function writeFile(filePath, data)
+    local serializedData = seri.serialize(data)
+    local file = io.open(filePath, "w")
+    if file then
+        file:write(serializedData)
+        file:close()
+    else
+        print("Error: Failed to open file for writing")
+    end
+end
+
 local args = {...}
 local command = args[1]
 
@@ -82,6 +93,25 @@ if command == "uninstall" then
     packInstaller.uninstall(packageName)
 end
 
+if command == "autoUpdate" then
+    local packageName = args[2]
+    if not packageName then
+        print("No package was provided")
+        return
+    end
+
+    local state = args[3]
+    if not (state == false or state == true) then
+        print("No bool value was provided")
+        return
+    end
+    local packageData = readFile("/Uinstall/packageData")
+    print("Past value: autoUpdate = " .. packageData[packageName].autoUpdate)
+    packageData[packageName].autoUpdate = state
+    print("New value: autoUpdate = " .. packageData[packageName].autoUpdate)
+    writeFile("/Uinstall/packageData", packageData)
+end
+
 if command == "help" or command == "h" or command == "?" then
     print('help:        shows this menu                                  "help"')
     print('install:     installs a package                               "install [repository] [?branch]"')
@@ -89,4 +119,5 @@ if command == "help" or command == "h" or command == "?" then
     print('update:      updates selected package to newest version       "update [package]"')
     print('list:        lists all installed packages                     "list"')
     print('checkUpdate: checks and updates all or one autoupdate package "checkUpdate [?package]"')
+    print('autoUpdate:  turn on or off auto update for a package         "autoUpdate [package] [bool]"')
 end
