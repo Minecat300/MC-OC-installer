@@ -222,7 +222,7 @@ function M.uninstall(packageName)
 
     print("Uninstalling package: " .. packageName)
 
-    local installedFiles = packageData[packageName].installedFiles
+    local installedFiles = seri.unserialize(packageData[packageName].installedFiles)
     if not installedFiles then
         print("Failed to uninstall. No installed files found")
         return
