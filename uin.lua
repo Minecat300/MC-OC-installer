@@ -60,7 +60,7 @@ if command == "checkUpdate" then
 end
 
 if command == "update" then
-    local packageName = args[1]
+    local packageName = args[2]
     if not packageName then
         print("No package was provided")
         return
