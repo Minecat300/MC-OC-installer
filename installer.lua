@@ -33,8 +33,8 @@ installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstalle
 print("installed required files")
 
 os.sleep(0.2)
-
+print(package.path)
 package.path = installpath .. "/?.lua;" .. package.path
-
+print(package.path)
 local proInstaller = require("projectInstaller")
 proInstaller.install(repoUrl)
