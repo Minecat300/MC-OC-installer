@@ -37,6 +37,9 @@ os.sleep(0.2)
 package.path = installpath .. "/?.lua;" .. package.path
 print("[MAIN] package.path updated")
 
+package.loaded["projectInstaller"] = nil
+
+
 local ok, proInstaller = pcall(require, "projectInstaller")
 if not ok then
     print("[ERROR] Failed to require projectInstaller:", proInstaller)
