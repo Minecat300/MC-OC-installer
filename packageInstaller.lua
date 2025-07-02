@@ -94,9 +94,7 @@ local function installFileArray(baseUrl, urlArray, installPath)
 end
 
 local function uninstallFileArray(fileArray, installpath)
-    print(seri.serialize(fileArray), installpath)
     for index, value in ipairs(fileArray) do
-        print(seri.serialize(value), index)
         local name = value.name
         if not name then
             print("Failed to uninstall. No file/dir name was found")
