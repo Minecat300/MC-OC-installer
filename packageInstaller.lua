@@ -94,6 +94,7 @@ local function installFileArray(baseUrl, urlArray, installPath)
 end
 
 local function uninstallFileArray(fileArray, installpath)
+    print(seri.serialize(fileArray), installpath)
     for index, value in ipairs(fileArray) do
         local name = value.name
         if not name then
