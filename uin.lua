@@ -60,9 +60,15 @@ if command == "checkUpdate" then
     
 end
 
+if command == "update" then
+    
+end
+
 if command == "help" or command == "h" or command == "?" then
-    print("help: ", "shows this menu")
-    print("install: ", 'installs a package "install [repository] [?branch]"')
-    print("list: ", "lists all installed packages")
-    print("checkUpdate: ", 'checks and updates all or one autoupdate package "checkUpdate [?package]"')
+    print('help:        shows this menu                                  "help"')
+    print('install:     installs a package                               "install [repository] [?branch]"')
+    print('uninstall:   uninstalls the selected package                  "uninstall [package]"')
+    print('update:      updates selected package to newest version       "update [package]"')
+    print('list:        lists all installed packages                     "list"')
+    print('checkUpdate: checks and updates all or one autoupdate package "checkUpdate [?package]"')
 end
