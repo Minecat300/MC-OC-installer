@@ -2,7 +2,7 @@
     "packageName": "uin",
     "description": "A tool for installing and updating packages",
     "autoUpdate": true,
-    "version": "1.0.8",
+    "version": "1.0.9",
     "installPath": "/",
     "fileInstalls": [
         {"subPath": "bin/", "name": "uin.lua", "type": "file"},

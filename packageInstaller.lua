@@ -150,14 +150,14 @@ local function readFile(filePath)
     return data
 end
 
-local function addPackageData(packageName, installJson, url, fileInstalls, installPath)
+local function addPackageData(packageName, installJson, url, fileInstalls, installPath, autoUpdate)
     local packageData = readFile("/Uinstall/packageData")
     packageData[packageName] = {}
     packageData[packageName].url = url
     packageData[packageName].installedFiles = seri.serialize(fileInstalls)
     packageData[packageName].installPath = installPath
     packageData[packageName].description = installJson.description
-    packageData[packageName].autoUpdate = installJson.autoUpdate or false
+    packageData[packageName].autoUpdate = autoUpdate
     packageData[packageName].version = installJson.version or "1.0"
     writeFile("/Uinstall/packageData", packageData)
 end
@@ -178,6 +178,7 @@ function M.update(packageName)
     print("Updating package: " .. packageName)
 
     local rawUrl = packageData[packageName].url
+    local autoUpdate = packageData[packageName].autoUpdate or false
 
     local installJson = getJson(rawUrl .. "/install.json")
     if not installJson then
@@ -205,7 +206,7 @@ function M.update(packageName)
 
     installFileArray(rawUrl, fileInstalls, installpath)
     removePackageData(packageName)
-    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installpath)
+    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installpath, autoUpdate)
     if packageName == newPackageName then
         print(packageName .. " was updated to newest version!")
     else
@@ -306,7 +307,7 @@ function M.install(url)
     end
 
     installFileArray(url, fileInstalls, installPath)
-    addPackageData(packageName, installJson, url, fileInstalls, installPath)
+    addPackageData(packageName, installJson, url, fileInstalls, installPath, installJson.autoUpdate or false)
     print(packageName .. " was installed!")
 end
 return M
