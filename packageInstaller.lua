@@ -211,6 +211,41 @@ function M.update(packageName)
     else
         print(packageName .. " was updated with new name: " .. newPackageName)
     end
+    print("Note: Some packages might need a reboot for the update to take into effect")
+end
+
+function M.autoUpdate(packageName)
+    local packageData = readFile("/Uinstall/packageData")
+    if not packageData[packageName] then
+        print("No package named (" .. packageName .. ") was found")
+        return
+    end
+
+    local oldVersion = packageData[packageName].version
+    local rawUrl = packageData[packageName].url
+
+    local installJson = getJson(rawUrl .. "/install.json")
+    if not installJson then
+        print("Failed to install. No install JSON was found")
+        return
+    end
+
+    local newVersion = installJson.version or "1.0"
+
+    if newVersion == oldVersion then
+        return
+    end
+    M.update(packageName)
+end
+
+function M.autoUpdateAll()
+    local packageData = readFile("/Uinstall/packageData")
+    for key, value in pairs(packageData) do
+        if value.autoUpdate then
+            print("Check update for: " .. key)
+            M.autoUpdate(key)
+        end
+    end
 end
 
 function M.uninstall(packageName)

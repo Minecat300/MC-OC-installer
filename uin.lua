@@ -56,7 +56,12 @@ if command == "list" then
 end
 
 if command == "checkUpdate" then
-    
+    local packageName = args[2]
+    if not packageName then
+        packInstaller.autoUpdateAll()
+        return
+    end
+    packInstaller.autoUpdate(packageName)
 end
 
 if command == "update" then
