@@ -33,4 +33,4 @@ installFile(repoUrl .. "/projectInstaller.lua", installpath .. "/projectInstalle
 
 local proInstaller = require("projectInstaller")
 
-proInstaller.install(repoUrl, installpath)
+proInstaller.install(repoUrl)

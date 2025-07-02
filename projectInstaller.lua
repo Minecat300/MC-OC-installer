@@ -82,7 +82,7 @@ end
 
 function M.install(url)
     print("installing project from url: " .. url)
-    
+
     local installJson = getJson(url .. "/install.json")
     if not installJson then
         print("failed to install. no JSON was found")
