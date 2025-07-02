@@ -49,13 +49,13 @@ end
 
 local function installFileArray(baseUrl, urlArray, installPath)
     for index, value in ipairs(urlArray) do
-        local name = value.name or nil
+        local name = value.name
         if not name then
             print("failed to install. no file/dir name was found")
             return
         end
 
-        local type = value.type or nil
+        local type = value.type
         if not type then
             print("failed to install. no file/dir type was found")
             return
@@ -91,13 +91,13 @@ function M.install(url)
 
     print(seri.serialize(installJson))
 
-    local fileInstalls = installJson.fileInstalls or nil
+    local fileInstalls = installJson.fileInstalls
     if not fileInstalls then
         print("failed to install. no install files found")
         return
     end
 
-    local installPath = installJson.installPath or nil
+    local installPath = installJson.installPath
     if not installPath then
         print("failed to install. no install path found")
         return
