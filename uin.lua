@@ -45,6 +45,17 @@ local function writeFile(filePath, data)
     end
 end
 
+local function toStrictBool(str)
+  str = tostring(str):lower()
+  if str == "true" or str == "1" then
+    return true
+  elseif str == "false" or str == "0" then
+    return false
+  else
+    return nil
+  end
+end
+
 local args = {...}
 local command = args[1]
 
@@ -100,7 +111,7 @@ if command == "autoUpdate" then
         return
     end
 
-    local state = args[3]
+    local state = toStrictBool(args[3])
     if not (state == false or state == true) then
         print("No bool value was provided")
         return
