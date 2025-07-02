@@ -39,3 +39,4 @@ package.path = installpath .. "/?.lua;" .. package.path
 package.loaded["projectInstaller"] = nil
 local proInstaller = require("projectInstaller")
 proInstaller.install(repoUrl)
+print("installed")
