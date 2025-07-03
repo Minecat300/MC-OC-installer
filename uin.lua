@@ -39,9 +39,7 @@ if command == "list" then
     local packageData = uinutils.readFile("/Uinstall/packageData")
     local packageNames = uinutils.getSortedPackageNames(packageData)
     local col = 20
-    print(seri.serialize(packageData))
-    print(seri.serialize(packageNames))
-    for name in ipairs(packageNames) do
+    for index, name in ipairs(packageNames) do
         local description = packageData[name].description or ""
         local padding = string.rep(" ", math.max(1, col - #name))
         print(name .. padding .. description)
@@ -55,7 +53,7 @@ if command == "version" then
 
     local packageName = args[2]
     if not packageName then
-        for name in ipairs(packageNames) do
+        for index, name in ipairs(packageNames) do
             local version = packageData[name].version or "1.0"
             local padding = string.rep(" ", math.max(1, col - #name))
             print(name .. padding .. version)
