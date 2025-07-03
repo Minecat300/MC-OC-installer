@@ -1,59 +1,25 @@
+package.path = "/Uinstall/?.lua;" .. package.path
 local component = require("component")
 local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
-package.path = "/Uinstall/?.lua;" .. package.path
 local packInstaller = require("packageInstaller")
+local uinutils = require("uinutils")
 
-local function makeRawURL(repoURL, branch)
-    branch = branch or "main"
-    local user, repo = repoURL:match("github.com/([^/]+)/([^/]+)")
+local function makeRawURL(repoURL)
+    local user, repo, branch, folder = repoURL:match("github.com/([^/]+)/([^/]+)/tree/([^/]+)/(.*)")
     if not user or not repo then
-        return nil, "Invalid GitHub URL"
+        user, repo = repoURL:match("github.com/([^/]+)/([^/]+)")
+        branch = "main"
     end
-    return string.format("https://raw.githubusercontent.com/%s/%s/%s", user, repo, branch)
-end
+    branch = branch or "main"
+    folder = folder and folder ~= "" and folder or nil
 
-local function readFile(filePath)
-    local file = io.open(filePath, "r")
-    local data = {}
-
-    if file then
-        local fileContent = file:read("*all")
-        file:close()
-
-        data = seri.unserialize(fileContent)
-        if not data then
-            print("Error: failed to unserialize the file content")
-            data = {}
-        end
+    if folder then
+        return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", user, repo, branch, folder)
     else
-        file = io.open(filePath, "w")
-        file:close()
+        return string.format("https://raw.githubusercontent.com/%s/%s/%s", user, repo, branch)
     end
-    return data
-end
-
-local function writeFile(filePath, data)
-    local serializedData = seri.serialize(data)
-    local file = io.open(filePath, "w")
-    if file then
-        file:write(serializedData)
-        file:close()
-    else
-        print("Error: Failed to open file for writing")
-    end
-end
-
-local function toStrictBool(str)
-  str = tostring(str):lower()
-  if str == "true" or str == "1" then
-    return true
-  elseif str == "false" or str == "0" then
-    return false
-  else
-    return nil
-  end
 end
 
 local args = {...}
@@ -65,15 +31,39 @@ if command == "install" then
         print("No Github repository was given")
         return
     end
-    local rawUrl = makeRawURL(url, args[3] or "main")
+    local rawUrl = makeRawURL(url)
     packInstaller.install(rawUrl)
 end
 
 if command == "list" then
-    local packageData = readFile("/Uinstall/packageData")
-    for key, value in pairs(packageData) do
-        local description = value.description or ""
-        print(key, description)
+    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageNames = uinutils.getSortedPackageNames(packageData)
+    local col = 20
+
+    for name in ipairs(packageNames) do
+        local description = packageData[name].description or ""
+        local padding = string.rep(" ", math.max(1, col - #name))
+        print(name .. padding .. description)
+    end
+end
+
+if command == "version" then
+    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageNames = uinutils.getSortedPackageNames(packageData)
+    local col = 20
+
+    local packageName = args[2]
+    if not packageName then 
+        for name in ipairs(packageNames) do
+            local version = packageData[name].version or "1.0"
+            local padding = string.rep(" ", math.max(1, col - #name))
+            print(name .. padding .. version)
+        end
+    else
+        local name = packageName
+        local version = packageData[name].version or "1.0"
+        local padding = string.rep(" ", math.max(1, col - #name))
+        print(name .. padding .. version)
     end
 end
 
@@ -111,24 +101,25 @@ if command == "autoUpdate" then
         return
     end
 
-    local state = toStrictBool(args[3])
+    local state = uinutils.toStrictBool(args[3])
     if not (state == false or state == true) then
         print("No bool value was provided")
         return
     end
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     print("Past value: autoUpdate = " .. tostring(packageData[packageName].autoUpdate))
     packageData[packageName].autoUpdate = state
     print("New value: autoUpdate = " .. tostring(packageData[packageName].autoUpdate))
-    writeFile("/Uinstall/packageData", packageData)
+    uinutils.writeFile("/Uinstall/packageData", packageData)
 end
 
-if command == "help" or command == "h" or command == "?" then
+if command == "help" or command == "h" or command == "?" or command == "" then
     print('help:        shows this menu                                  "help"')
-    print('install:     installs a package                               "install [repository] [?branch]"')
+    print('install:     installs a package                               "install [repository]"')
     print('uninstall:   uninstalls the selected package                  "uninstall [package]"')
     print('update:      updates selected package to newest version       "update [package]"')
     print('list:        lists all installed packages                     "list"')
+    print('version:     lists the version of installed packages          "version [?package]')
     print('checkUpdate: checks and updates all or one autoupdate package "checkUpdate [?package]"')
     print('autoUpdate:  turn on or off auto update for a package         "autoUpdate [package] [bool]"')
 end

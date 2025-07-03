@@ -3,6 +3,7 @@ local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
 local json = require("dkjson")
+local uinutils = require("uinutils")
 
 local M = {}
 
@@ -37,6 +38,10 @@ local function installFile(url, path)
     end
 
     local file = io.open(path, "w")
+    if not file then
+        print("Failed to create file")
+        return
+    end
 
     while true do
         local chunk = handle.read(8192)
@@ -74,7 +79,7 @@ local function installFileArray(baseUrl, urlArray, installPath)
         end
 
         if type == "file" then
-            installFile(baseUrl .. "/" .. name, installPath .. subPath .. name)
+            installFile(uinutils.url_concat(baseUrl, name), filesystem.concat(installPath, subPath, name))
         end
 
         if type == "dir" then
@@ -84,11 +89,13 @@ local function installFileArray(baseUrl, urlArray, installPath)
                 return
             end
 
-            if not filesystem.isDirectory(installPath .. subPath .. name) then
-                filesystem.makeDirectory(installPath .. subPath .. name)
+            local fullPath = filesystem.concat(installPath, subPath, name)
+
+            if not filesystem.isDirectory(fullPath) then
+                filesystem.makeDirectory(fullPath)
             end
 
-            installFileArray(baseUrl .. "/" .. name, fileInstalls, installPath .. subPath .. name)
+            installFileArray(uinutils.url_concat(baseUrl, name), fileInstalls, fullPath)
         end
     end
 end
@@ -109,49 +116,20 @@ local function uninstallFileArray(fileArray, installpath)
             return
         end
 
+        local fullPath = filesystem.concat(installpath, subPath, name)
+
         if type == "file" then
-            filesystem.remove(installpath .. subPath .. name)
+            filesystem.remove(fullPath)
         end
 
         if type == "dir" then
-            deleteRecursive(installpath .. subPath .. name)
+            deleteRecursive(fullPath)
         end
     end
-end
-
-local function writeFile(filePath, data)
-    local serializedData = seri.serialize(data)
-    local file = io.open(filePath, "w")
-    if file then
-        file:write(serializedData)
-        file:close()
-    else
-        print("Error: Failed to open file for writing")
-    end
-end
-
-local function readFile(filePath)
-    local file = io.open(filePath, "r")
-    local data = {}
-
-    if file then
-        local fileContent = file:read("*all")
-        file:close()
-
-        data = seri.unserialize(fileContent)
-        if not data then
-            print("Error: Failed to unserialize the file content")
-            data = {}
-        end
-    else
-        file = io.open(filePath, "w")
-        file:close()
-    end
-    return data
 end
 
 local function addPackageData(packageName, installJson, url, fileInstalls, installPath, autoUpdate)
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     packageData[packageName] = {}
     packageData[packageName].url = url
     packageData[packageName].installedFiles = seri.serialize(fileInstalls)
@@ -159,17 +137,17 @@ local function addPackageData(packageName, installJson, url, fileInstalls, insta
     packageData[packageName].description = installJson.description
     packageData[packageName].autoUpdate = autoUpdate
     packageData[packageName].version = installJson.version or "1.0"
-    writeFile("/Uinstall/packageData", packageData)
+    uinutils.writeFile("/Uinstall/packageData", packageData)
 end
 
 local function removePackageData(packageName)
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     packageData[packageName] = nil
-    writeFile("/Uinstall/packageData", packageData)
+    uinutils.writeFile("/Uinstall/packageData", packageData)
 end
 
 function M.update(packageName)
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
         return
@@ -216,7 +194,7 @@ function M.update(packageName)
 end
 
 function M.autoUpdate(packageName)
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
         return
@@ -242,7 +220,7 @@ function M.autoUpdate(packageName)
 end
 
 function M.autoUpdateAll()
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     for key, value in pairs(packageData) do
         if value.autoUpdate then
             print("Check update for: " .. key)
@@ -252,7 +230,7 @@ function M.autoUpdateAll()
 end
 
 function M.uninstall(packageName)
-    local packageData = readFile("/Uinstall/packageData")
+    local packageData = uinutils.readFile("/Uinstall/packageData")
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
         return

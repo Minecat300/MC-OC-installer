@@ -18,6 +18,10 @@ local function installFile(url, path)
     end
 
     local file = io.open(path, "w")
+    if not file then
+        print("Failed to create file")
+        return
+    end
 
     while true do
         local chunk = handle.read(8192)
@@ -28,8 +32,9 @@ local function installFile(url, path)
     file:close()
 end
 
-installFile(repoUrl .. "/dkjson.lua", installpath .. "/dkjson.lua")
-installFile(repoUrl .. "/packageInstaller.lua", installpath .. "/packageInstaller.lua")
+installFile(repoUrl .. "/dkjson.lua", filesystem.concat(installpath, "/dkjson.lua"))
+installFile(repoUrl .. "/uinutils.lua", filesystem.concat(installpath, "/uinutils.lua"))
+installFile(repoUrl .. "/packageInstaller.lua", filesystem.concat(installpath, "/packageInstaller.lua"))
 print("installed required files")
 
 os.sleep(0.2)
