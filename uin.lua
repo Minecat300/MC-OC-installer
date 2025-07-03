@@ -39,7 +39,8 @@ if command == "list" then
     local packageData = uinutils.readFile("/Uinstall/packageData")
     local packageNames = uinutils.getSortedPackageNames(packageData)
     local col = 20
-
+    print(seri.serialize(packageData))
+    print(seri.serialize(packageNames))
     for name in ipairs(packageNames) do
         local description = packageData[name].description or ""
         local padding = string.rep(" ", math.max(1, col - #name))
@@ -53,7 +54,7 @@ if command == "version" then
     local col = 20
 
     local packageName = args[2]
-    if not packageName then 
+    if not packageName then
         for name in ipairs(packageNames) do
             local version = packageData[name].version or "1.0"
             local padding = string.rep(" ", math.max(1, col - #name))
@@ -113,7 +114,7 @@ if command == "autoUpdate" then
     uinutils.writeFile("/Uinstall/packageData", packageData)
 end
 
-if command == "help" or command == "h" or command == "?" or command == "" then
+if command == "help" or command == "h" or command == "?" or not command then
     print('help:        shows this menu                                  "help"')
     print('install:     installs a package                               "install [repository]"')
     print('uninstall:   uninstalls the selected package                  "uninstall [package]"')
