@@ -78,8 +78,11 @@ local function installFileArray(baseUrl, urlArray, installPath)
             return
         end
 
+        local fullPath = filesystem.concat(installPath, subPath, name)
+
         if type == "file" then
-            installFile(uinutils.url_concat(baseUrl, name), filesystem.concat(installPath, subPath, name))
+            uinutils.ensureDirs(fullPath)
+            installFile(uinutils.url_concat(baseUrl, name), fullPath)
         end
 
         if type == "dir" then
@@ -88,8 +91,6 @@ local function installFileArray(baseUrl, urlArray, installPath)
                 print("Failed to install. No files found in dir: " .. name)
                 return
             end
-
-            local fullPath = filesystem.concat(installPath, subPath, name)
 
             if not filesystem.isDirectory(fullPath) then
                 filesystem.makeDirectory(fullPath)
