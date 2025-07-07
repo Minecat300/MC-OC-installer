@@ -3,6 +3,7 @@ local component = require("component")
 local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
+local shell = require("shell")
 local packInstaller = require("packageInstaller")
 local uinutils = require("uinutils")
 
@@ -66,6 +67,28 @@ if command == "version" then
     end
 end
 
+if command == "run" then
+    local packageName = args[2]
+    if not packageName then
+        print("No package was provided")
+        return
+    end
+
+    local packageData = uinutils.readFile("/Uinstall/packageData")
+
+    if not packageData[packageName] then
+        print("No package named (" .. packageName .. ") was found")
+        return
+    end
+
+    if not packageData[packageName].programPath then
+        print("This program has no main program file")
+        return
+    end
+
+    shell.execute(packageData[packageName].programPath)
+end
+
 if command == "checkUpdate" then
     local packageName = args[2]
     if not packageName then
@@ -117,6 +140,7 @@ if command == "help" or command == "h" or command == "?" or not command then
     print('install:     installs a package                               "install [repository]"')
     print('uninstall:   uninstalls the selected package                  "uninstall [package]"')
     print('update:      updates selected package to newest version       "update [package]"')
+    print('run:         runs a package if it has a main file             "run [package]"')
     print('list:        lists all installed packages                     "list"')
     print('version:     lists the version of installed packages          "version [?package]')
     print('checkUpdate: checks and updates all or one autoupdate package "checkUpdate [?package]"')

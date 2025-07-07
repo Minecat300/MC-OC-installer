@@ -98,4 +98,21 @@ function M.ensureDirs(path)
     end
 end
 
+function M.sortByWeight(obj)
+  local keys = {}
+  for key in pairs(obj) do
+    table.insert(keys, key)
+  end
+
+  table.sort(keys, function(a, b)
+    if obj[a] == obj[b] then
+      return a < b
+    else
+      return obj[a] < obj[b]
+    end
+  end)
+
+  return keys
+end
+
 return M

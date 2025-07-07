@@ -129,7 +129,7 @@ local function uninstallFileArray(fileArray, installpath)
     end
 end
 
-local function addPackageData(packageName, installJson, url, fileInstalls, installPath, autoUpdate)
+local function addPackageData(packageName, installJson, url, fileInstalls, installPath, autoUpdate, runOnBoot, programPath)
     local packageData = uinutils.readFile("/Uinstall/packageData")
     packageData[packageName] = {}
     packageData[packageName].url = url
@@ -137,6 +137,8 @@ local function addPackageData(packageName, installJson, url, fileInstalls, insta
     packageData[packageName].installPath = installPath
     packageData[packageName].description = installJson.description
     packageData[packageName].autoUpdate = autoUpdate
+    packageData[packageName].runOnBoot = runOnBoot
+    packageData[packageName].programPath = programPath
     packageData[packageName].version = installJson.version or "1.0"
     uinutils.writeFile("/Uinstall/packageData", packageData)
 end
@@ -185,7 +187,7 @@ function M.update(packageName)
 
     installFileArray(rawUrl, fileInstalls, installpath)
     removePackageData(packageName)
-    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installpath, autoUpdate)
+    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installpath, autoUpdate, installJson.runOnBoot or false, installJson.programPath or false)
     if packageName == newPackageName then
         print(packageName .. " was updated to newest version!")
     else
@@ -286,7 +288,7 @@ function M.install(url)
     end
 
     installFileArray(url, fileInstalls, installPath)
-    addPackageData(packageName, installJson, url, fileInstalls, installPath, installJson.autoUpdate or false)
+    addPackageData(packageName, installJson, url, fileInstalls, installPath, installJson.autoUpdate or false, installJson.runOnBoot or false, installJson.programPath or false)
     print(packageName .. " was installed!")
 end
 return M
