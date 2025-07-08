@@ -8,7 +8,7 @@ local seri = require("serialization")
 
 term.clear()
 term.setCursor(1, 1)
-packInstaller.autoUpdateAll()
+packInstaller.autoUpdateAll(true)
 
 local packageData = uinutils.readFile("/Uinstall/packageData")
 

@@ -2,6 +2,7 @@ local component = require("component")
 local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
+local computer = require("computer")
 local json = require("dkjson")
 local uinutils = require("uinutils")
 
@@ -149,7 +150,7 @@ local function removePackageData(packageName)
     uinutils.writeFile("/Uinstall/packageData", packageData)
 end
 
-function M.update(packageName)
+function M.update(packageName, forcedReboot)
     local packageData = uinutils.readFile("/Uinstall/packageData")
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
@@ -194,9 +195,21 @@ function M.update(packageName)
         print(packageName .. " was updated with new name: " .. newPackageName)
     end
     print("Note: Some packages might need a reboot for the update to take into effect")
+
+    if installJson.rebootAfterUpdate then
+        if forcedReboot then
+            computer.shutdown(true)
+        end
+        io.write("Want to reboot now? y or n: ")
+        local answer = io.read()
+
+        if answer == "y" then
+            computer.shutdown(true)
+        end
+    end
 end
 
-function M.autoUpdate(packageName)
+function M.autoUpdate(packageName, forcedReboot)
     local packageData = uinutils.readFile("/Uinstall/packageData")
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
@@ -219,15 +232,15 @@ function M.autoUpdate(packageName)
         return
     end
     print("new version found: " .. oldVersion .. " -> " .. newVersion)
-    M.update(packageName)
+    M.update(packageName, forcedReboot)
 end
 
-function M.autoUpdateAll()
+function M.autoUpdateAll(forcedReboot)
     local packageData = uinutils.readFile("/Uinstall/packageData")
     for key, value in pairs(packageData) do
         if value.autoUpdate then
             print("Check update for: " .. key)
-            M.autoUpdate(key)
+            M.autoUpdate(key, forcedReboot)
         end
     end
 end
