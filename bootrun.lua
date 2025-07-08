@@ -33,3 +33,5 @@ print(seri.serialize(packageWeights))
 for _, name in ipairs(packageWeights) do
     shell.execute(packageData[name].runOnBoot.path)
 end
+
+os.sleep(5)
