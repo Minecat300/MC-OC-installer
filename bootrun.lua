@@ -19,7 +19,7 @@ for name, value in pairs(packageData) do
     end
 end
 
-print(seri.serialize(packageWeights))
+--print(seri.serialize(packageWeights))
 
 packageWeights = uinutils.sortByWeight(packageWeights)
 
@@ -28,10 +28,8 @@ if keyboard.isAltDown() and keyboard.isControlDown() then
     return
 end
 
-print(seri.serialize(packageWeights))
+--print(seri.serialize(packageWeights))
 
 for _, name in ipairs(packageWeights) do
     shell.execute(packageData[name].runOnBoot.path)
 end
-
-os.sleep(5)
