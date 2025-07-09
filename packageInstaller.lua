@@ -3,6 +3,7 @@ local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
 local computer = require("computer")
+local shell = require("shell")
 local json = require("dkjson")
 local uinutils = require("uinutils")
 
@@ -300,8 +301,20 @@ function M.install(url)
         return
     end
 
+    local dependencies = installJson.dependencies
+    if dependencies then
+        for _, packageUrl in ipairs(dependencies) do
+            M.install(packageUrl)
+        end
+    end
+
     installFileArray(url, fileInstalls, installPath)
     addPackageData(packageName, installJson, url, fileInstalls, installPath, installJson.autoUpdate or false, installJson.runOnBoot or false, installJson.programPath or false)
     print(packageName .. " was installed!")
+
+    local runOnInstall = installJson.runOnInstall
+    if runOnInstall then
+        shell.execute(runOnInstall)
+    end
 end
 return M
