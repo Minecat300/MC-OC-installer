@@ -1,68 +1,10 @@
-local component = require("component")
-local internet = component.internet
 local filesystem = require("filesystem")
 local seri = require("serialization")
 local computer = require("computer")
 local shell = require("shell")
-local json = require("dkjson")
 local uinutils = require("uinutils")
 
 local M = {}
-
-local function getJson(url)
-    local handle, err = internet.request(url)
-    if not handle then
-        print("Failed to request URL:", err)
-        return
-    end
-
-    local jsonInstall = ""
-    while true do
-        local chunk = handle.read(8192)
-        if not chunk then break end
-        jsonInstall = jsonInstall .. chunk
-    end
-
-    local obj, pos, decode_err = json.decode(jsonInstall, 1, nil)
-    if decode_err then
-        print("JSON decode error:", decode_err)
-        return
-    end
-
-    return obj
-end
-
-local function installFile(url, path)
-    local handle, err = internet.request(url)
-    if not handle then
-        print("Failed to request URL:", err)
-        return
-    end
-
-    local file = io.open(path, "w")
-    if not file then
-        print("Failed to create file")
-        return
-    end
-
-    while true do
-        local chunk = handle.read(8192)
-        if not chunk then break end
-        file:write(chunk)
-    end
-
-    file:close()
-end
-
-local function deleteRecursive(path)
-    if filesystem.isDirectory(path) then
-        for file in filesystem.list(path) do
-            local fullPath = filesystem.concat(path, file)
-            deleteRecursive(fullPath)
-        end
-    end
-    filesystem.remove(path)
-end
 
 local function installFileArray(baseUrl, urlArray, installPath)
     for index, value in ipairs(urlArray) do
@@ -84,7 +26,7 @@ local function installFileArray(baseUrl, urlArray, installPath)
 
         if type == "file" then
             uinutils.ensureDirs(fullPath)
-            installFile(uinutils.url_concat(baseUrl, name), fullPath)
+            uinutils.installFile(uinutils.url_concat(baseUrl, name), fullPath)
         end
 
         if type == "dir" then
@@ -126,13 +68,13 @@ local function uninstallFileArray(fileArray, installpath)
         end
 
         if type == "dir" then
-            deleteRecursive(fullPath)
+            uinutils.deleteRecursive(fullPath)
         end
     end
 end
 
 local function addPackageData(packageName, installJson, url, fileInstalls, installPath, autoUpdate, runOnBoot, programPath)
-    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageData = uinutils.getPackageData()
     packageData[packageName] = {}
     packageData[packageName].url = url
     packageData[packageName].installedFiles = seri.serialize(fileInstalls)
@@ -142,17 +84,17 @@ local function addPackageData(packageName, installJson, url, fileInstalls, insta
     packageData[packageName].runOnBoot = runOnBoot
     packageData[packageName].programPath = programPath
     packageData[packageName].version = installJson.version or "1.0"
-    uinutils.writeFile("/Uinstall/packageData", packageData)
+    uinutils.savePackageData(packageData)
 end
 
 local function removePackageData(packageName)
-    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageData = uinutils.getPackageData()
     packageData[packageName] = nil
-    uinutils.writeFile("/Uinstall/packageData", packageData)
+    uinutils.savePackageData(packageData)
 end
 
 function M.update(packageName, forcedReboot)
-    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageData = uinutils.getPackageData()
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
         return
@@ -163,33 +105,14 @@ function M.update(packageName, forcedReboot)
     local rawUrl = packageData[packageName].url
     local autoUpdate = packageData[packageName].autoUpdate or false
 
-    local installJson = getJson(rawUrl .. "/install.json")
+    local installJson, newPackageName, fileInstalls, installPath = uinutils.getPackageInstallJson(rawUrl)
     if not installJson then
-        print ("Failed to update. No install JSON was found")
         return
     end
 
-    local newPackageName = installJson.packageName
-    if not newPackageName then
-        print("Failed to update. No package name was found")
-        return
-    end
-
-    local fileInstalls = installJson.fileInstalls
-    if not fileInstalls then
-        print("Failed to update. No install files found")
-        return
-    end
-    
-    local installpath = installJson.installPath
-    if not installpath then
-        print("Failed to update. No install path found")
-        return
-    end
-
-    installFileArray(rawUrl, fileInstalls, installpath)
+    installFileArray(rawUrl, fileInstalls, installPath)
     removePackageData(packageName)
-    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installpath, autoUpdate, installJson.runOnBoot or false, installJson.programPath or false)
+    addPackageData(newPackageName, installJson, rawUrl, fileInstalls, installPath, autoUpdate, installJson.runOnBoot or false, installJson.programPath or false)
     if packageName == newPackageName then
         print(packageName .. " was updated to newest version!")
     else
@@ -211,7 +134,7 @@ function M.update(packageName, forcedReboot)
 end
 
 function M.autoUpdate(packageName, forcedReboot)
-    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageData = uinutils.getPackageData()
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
         return
@@ -220,7 +143,7 @@ function M.autoUpdate(packageName, forcedReboot)
     local oldVersion = packageData[packageName].version
     local rawUrl = packageData[packageName].url
 
-    local installJson = getJson(rawUrl .. "/install.json")
+    local installJson = uinutils.getJson(rawUrl .. "/install.json")
     if not installJson then
         print("Failed to install. No install JSON was found")
         return
@@ -237,7 +160,7 @@ function M.autoUpdate(packageName, forcedReboot)
 end
 
 function M.autoUpdateAll(forcedReboot)
-    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageData = uinutils.getPackageData()
     for key, value in pairs(packageData) do
         if value.autoUpdate then
             print("Check update for: " .. key)
@@ -247,7 +170,7 @@ function M.autoUpdateAll(forcedReboot)
 end
 
 function M.uninstall(packageName)
-    local packageData = uinutils.readFile("/Uinstall/packageData")
+    local packageData = uinutils.getPackageData()
     if not packageData[packageName] then
         print("No package named (" .. packageName .. ") was found")
         return
@@ -275,36 +198,19 @@ end
 function M.install(url)
     print("Installing package from url: " .. url)
 
-    local installJson = getJson(url .. "/install.json")
+    local installJson, packageName, fileInstalls, installPath = uinutils.getPackageInstallJson(url)
     if not installJson then
-        print("Failed to install. No install JSON was found")
         return
     end
 
     --print(seri.serialize(installJson))
 
-    local packageName = installJson.packageName
-    if not packageName then
-        print("Failed to install. No package name was found")
-        return
-    end
-
-    local fileInstalls = installJson.fileInstalls
-    if not fileInstalls then
-        print("Failed to install. No install files found")
-        return
-    end
-
-    local installPath = installJson.installPath
-    if not installPath then
-        print("Failed to install. No install path found")
-        return
-    end
-
     local dependencies = installJson.dependencies
     if dependencies then
         for _, packageUrl in ipairs(dependencies) do
-            M.install(packageUrl)
+            if not uinutils.isPackageInstalledByUrl(packageUrl) then
+                M.install(packageUrl)
+            end
         end
     end
 

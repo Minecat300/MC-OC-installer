@@ -1,5 +1,8 @@
 local filesystem = require("filesystem")
 local seri = require("serialization")
+local component = require("component")
+local json = require("dkjson")
+local internet = component.internet
 
 local M = {}
 
@@ -113,6 +116,111 @@ function M.sortByWeight(obj)
   end)
 
   return keys
+end
+
+function M.getJson(url)
+    local handle, err = internet.request(url)
+    if not handle then
+        print("Failed to request URL:", err)
+        return
+    end
+
+    local jsonInstall = ""
+    while true do
+        local chunk = handle.read(8192)
+        if not chunk then break end
+        jsonInstall = jsonInstall .. chunk
+    end
+
+    local obj, pos, decode_err = json.decode(jsonInstall, 1, nil)
+    if decode_err then
+        print("JSON decode error:", decode_err)
+        return
+    end
+
+    return obj
+end
+
+function M.installFile(url, path)
+    local handle, err = internet.request(url)
+    if not handle then
+        print("Failed to request URL:", err)
+        return
+    end
+
+    local file = io.open(path, "w")
+    if not file then
+        print("Failed to create file")
+        return
+    end
+
+    while true do
+        local chunk = handle.read(8192)
+        if not chunk then break end
+        file:write(chunk)
+    end
+
+    file:close()
+end
+
+function M.deleteRecursive(path)
+    if filesystem.isDirectory(path) then
+        for file in filesystem.list(path) do
+            local fullPath = filesystem.concat(path, file)
+            M.deleteRecursive(fullPath)
+        end
+    end
+    filesystem.remove(path)
+end
+
+function M.getPackageInstallJson(packageUrl)
+    local installJson = M.getJson(packageUrl .. "/install.json")
+    if not installJson then
+        print("Failed to install. No install JSON was found")
+        return
+    end
+
+    local packageName = installJson.packageName
+    if not packageName then
+        print("Failed to install. No package name was found")
+        return
+    end
+
+    local fileInstalls = installJson.fileInstalls
+    if not fileInstalls then
+        print("Failed to install. No install files found")
+        return
+    end
+
+    local installPath = installJson.installPath
+    if not installPath then
+        print("Failed to install. No install path found")
+        return
+    end
+
+    return installJson, packageName, fileInstalls, installPath
+end
+
+function M.getPackageData()
+    local packageData = M.readFile("/Uinstall/packageData")
+    return packageData
+end
+
+function M.savePackageData(packageData)
+    M.writeFile("/Uinstall/packageData", packageData)
+end
+
+function M.isPackageInstalled(packageName)
+    local packageData = M.getPackageData()
+    if packageData[packageName] then
+        return true
+    end
+    return false
+end
+
+function M.isPackageInstalledByUrl(packageUrl)
+    local _, packageName = M.getPackageInstallJson(packageUrl)
+    return M.isPackageInstalled(packageName)
 end
 
 return M
