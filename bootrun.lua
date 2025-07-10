@@ -5,6 +5,7 @@ local term = require("term")
 local shell = require("shell")
 local keyboard = require("keyboard")
 local seri = require("serialization")
+local computer = require("computer")
 
 term.clear()
 term.setCursor(1, 1)
@@ -31,5 +32,11 @@ end
 --print(seri.serialize(packageWeights))
 
 for _, name in ipairs(packageWeights) do
-    shell.execute(packageData[name].runOnBoot.path)
+    local runData = packageData[name].runOnBoot
+    if runData.runInBackground then
+        local pid = computer.launch(runData.path)
+        print("Started " .. name .. " as background process with PID: " .. pid)
+    else
+        shell.execute(runData.path)
+    end
 end
